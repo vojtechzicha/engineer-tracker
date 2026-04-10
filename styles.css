@@ -95,7 +95,7 @@ a {
 
 .hero h1 {
   margin: 18px 0 10px;
-  max-width: 13ch;
+  max-width: 20ch;
   font-family: var(--display-font);
   font-size: clamp(2.35rem, 5vw, 4.6rem);
   line-height: 0.94;
