@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ing 2026 Admissions Tracker</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__eyebrow">Ing 2026 Tracker</div>
+        <h1>Statický admissions tracker pro tvoje navazující magisterské přihlášky</h1>
+        <p class="hero__lede">
+          Jedna stránka, která spojuje 7 podaných přihlášek, NU bakalářský harmonogram,
+          kolize, doporučení a odvolací / přezkumné větve tam, kde je škola opravdu uvádí.
+        </p>
+        <div id="hero-summary" class="hero__summary"></div>
+      </header>
+
+      <main class="content-grid">
+        <section class="panel panel--accent" id="next-actions">
+          <div class="section-head">
+            <span class="section-head__kicker">Co teď</span>
+            <h2>Dnes / Next actions</h2>
+          </div>
+          <div id="next-actions-content"></div>
+        </section>
+
+        <section class="panel" id="master-timeline">
+          <div class="section-head">
+            <span class="section-head__kicker">Přehled</span>
+            <h2>Master harmonogram</h2>
+          </div>
+          <div id="timeline-content"></div>
+        </section>
+
+        <section class="panel" id="schools">
+          <div class="section-head">
+            <span class="section-head__kicker">Detail</span>
+            <h2>Školy</h2>
+          </div>
+          <div id="schools-content" class="school-grid"></div>
+        </section>
+
+        <section class="panel" id="decision-flow">
+          <div class="section-head">
+            <span class="section-head__kicker">Scénáře</span>
+            <h2>Rozhodovací flow</h2>
+          </div>
+          <div id="flow-content"></div>
+        </section>
+
+        <section class="panel" id="sources">
+          <div class="section-head">
+            <span class="section-head__kicker">Podklady</span>
+            <h2>Zdroje</h2>
+          </div>
+          <div id="sources-content"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
