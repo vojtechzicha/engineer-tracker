@@ -56,6 +56,13 @@ export const sourceLibrary = [
     note: "Rozpad testů, body, interní bezzkouškové větve a bonifikace.",
   },
   {
+    id: "uhk-harmonogram-2026",
+    title: "UHK FIM - harmonogram přijímacích zkoušek 2026",
+    kind: "local",
+    url: "./docs/UHK FIM - harmonogram 2026.md",
+    note: "Příloha č. 2 k výnosu děkanky; kombinovaní navazující magistri AI a IM jsou bez přijímací zkoušky.",
+  },
+  {
     id: "tul-rules",
     title: "EF TUL - pravidla přijímacího řízení 2026/2027",
     kind: "local",

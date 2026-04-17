@@ -43,6 +43,7 @@ A static, single-page web application for tracking master's degree (navazující
     ├── ZČU FEK - pravidla ing.md / .pdf
     ├── UHK FIM - pravidla ing.md / .pdf
     ├── UHK FIM - priloha.md / .pdf
+    ├── UHK FIM - harmonogram 2026.md / .pdf
     └── EF TUL - pravidla ing.md / .pdf
 ```
 

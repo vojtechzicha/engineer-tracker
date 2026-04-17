@@ -361,22 +361,6 @@ function buildManualTasks(applications, today) {
     });
   }
 
-  applications
-    .filter((app) => app.id.startsWith("uhk-"))
-    .forEach((app) => {
-      const reminderDate = parseDate("2026-04-30");
-      if (!app.liveState.exactExamDate && dayDiff(reminderDate, today) <= 21) {
-        tasks.push({
-          id: `${app.id}-harmonogram`,
-          title: `Za chvíli zkontroluj harmonogram UHK pro ${app.identity.program}`,
-          tone: dayDiff(reminderDate, today) < 0 ? "danger" : "warning",
-          dueLabel: `Kontrolní bod: ${formatDate("2026-04-30")}`,
-          body: "FIM zveřejňuje konkrétní termíny po konci dubna. Jakmile vyjdou, doplň exactExamDate.",
-          chips: ["UHK", "Harmonogram"],
-        });
-      }
-    });
-
   return tasks;
 }
 
@@ -393,12 +377,17 @@ function buildReminderTasks(applications, today) {
 
       const offsets = profiles[event.reminderProfile ?? "hard"] ?? profiles.hard;
       const daysLeft = dayDiff(dueDate, today);
-      if (daysLeft < 0 || offsets.includes(daysLeft)) {
+      if (daysLeft <= 0 || offsets.includes(daysLeft)) {
         tasks.push({
           id: `${app.id}-${event.id}-reminder`,
           title: `${app.identity.shortLabel}: ${event.label}`,
           tone: daysLeft < 0 ? "danger" : daysLeft <= 3 ? "warning" : "accent",
-          dueLabel: daysLeft < 0 ? `${Math.abs(daysLeft)} dní po termínu` : `za ${daysLeft} dní · ${formatRange(event.date ?? event.startDate, event.endDate)}`,
+          dueLabel:
+            daysLeft < 0
+              ? `${Math.abs(daysLeft)} dní po termínu`
+              : daysLeft === 0
+                ? `dnes · ${formatRange(event.date ?? event.startDate, event.endDate)}`
+                : `za ${daysLeft} dní · ${formatRange(event.date ?? event.startDate, event.endDate)}`,
           body: event.note ?? app.fixedRules.acceptanceLook,
           chips: [app.identity.shortLabel, event.kind],
         });
@@ -448,14 +437,14 @@ function buildRecommendations(applications) {
   }
 
   recommendations.push({
-    title: "FEK / ČZU / pozdější TUL-UHK zápisy ber jako tvrdé commit momenty",
+    title: "FEK / ČZU / pozdější zápisy ber jako tvrdé commit momenty",
     body: "Potvrzení typu VŠE Návratka ještě může být čistě ochranný tah. Osobní nebo závazné zápisy už ber jako moment, kdy se musíš přepnout z držení opcí do finální volby.",
     tags: ["commitment", "zápis"],
   });
 
   recommendations.push({
     title: "Odmítnutí neznamená vždy konec",
-    body: "VŠE může z odvolání dělat dodatečné přijetí, TUL má 15denní odvolání a UHK dává prostor na nahlédnutí a přezkoumání. Naopak u FEK tu odvolací větev z podkladů neinferuju.",
+    body: "VŠE může z odvolání dělat dodatečné přijetí, TUL má 15denní odvolání a UHK má standardní přezkumnou větev po rozhodnutí. Naopak u FEK tu odvolací větev z podkladů neinferuju.",
     tags: ["odvolání", "přezkum"],
   });
 
@@ -553,7 +542,7 @@ function renderTimeline(timeline, bachelorEvents) {
       <strong>Tvrdé kolize, které tracker hlídá:</strong>
       FEK doklady <strong>31. 5. 2026</strong> a TUL doklady <strong>4. 6. 2026</strong>
       padají přímo do NU <strong>Bc SZZ 25. 5. - 5. 6. 2026</strong>.
-      VŠE Návratka <strong>25. 6. 2026</strong> je zase dřív, než budou definitivně uzavřené všechny ČZU / UHK scénáře.
+      VŠE Návratka <strong>25. 6. 2026</strong> může pořád předběhnout některé ČZU výsledky, zatímco UHK teď hlídej hlavně přes STAG / email.
     </div>
     <div class="timeline-list">
       ${timeline
