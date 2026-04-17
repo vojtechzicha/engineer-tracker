@@ -16,3 +16,6 @@ Desktop.ini
 
 # Local Netlify folder
 .netlify
+
+# Input folder (local only)
+input/
