@@ -448,6 +448,85 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.sequence-list {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+
+.sequence-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.sequence-card--danger {
+  border-color: rgba(180, 35, 24, 0.35);
+  background: linear-gradient(135deg, var(--danger-soft), rgba(255, 255, 255, 0.9));
+}
+
+.sequence-card--warning {
+  border-color: rgba(180, 83, 9, 0.32);
+  background: linear-gradient(135deg, var(--warn-soft), rgba(255, 255, 255, 0.9));
+}
+
+.sequence-card--accent {
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.sequence-card--success {
+  border-color: rgba(22, 101, 52, 0.3);
+  background: linear-gradient(135deg, var(--success-soft), rgba(255, 255, 255, 0.9));
+}
+
+.sequence-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sequence-card__step {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sequence-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.sequence-card__dates {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.sequence-card__dates div {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(19, 33, 27, 0.04);
+  border: 1px solid var(--line);
+}
+
+.sequence-card__dates span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .flow-card {
   padding: 18px;
   display: grid;

@@ -173,6 +173,10 @@ function buildTulCondition(app) {
 function buildDerivedEvents(app) {
   const events = app.fixedRules.actionItems.map((event) => ({ ...event }));
 
+  if (app.liveState.taskState?.softDropped) {
+    return [];
+  }
+
   if (app.id === "vse-fm-management-k") {
     const examEvent = events.find((event) => event.id === "vse-exam");
     if (examEvent) {
@@ -294,6 +298,61 @@ function buildApplicationView(app, bachelorEvents, today) {
   };
 }
 
+function formatPlanDate(dateValue, labelValue, emptyLabel = "Trigger-based") {
+  if (labelValue) return labelValue;
+  if (dateValue) return formatDate(dateValue);
+  return emptyLabel;
+}
+
+function buildCleanSequenceTasks(applications) {
+  const tasks = admissionsConfig.meta.cleanSequence?.tasks ?? [];
+
+  return tasks.map((task, index) => {
+    const app = applications.find((application) => application.id === task.applicationId);
+    const complete = app && task.taskKey ? Boolean(getByPath(app.liveState, task.taskKey)) : false;
+
+    return {
+      ...task,
+      index,
+      app,
+      complete,
+      suggestedDisplay: formatPlanDate(task.suggestedDate, task.suggestedLabel, "Až nastane trigger"),
+      deadlineDisplay: formatPlanDate(task.deadlineDate, task.deadlineLabel, "Bez pevného školního termínu"),
+    };
+  });
+}
+
+function buildStrategyActionTasks(applications, today) {
+  const profiles = admissionsConfig.meta.reminderProfiles;
+
+  return buildCleanSequenceTasks(applications)
+    .filter((task) => !task.complete && task.suggestedDate)
+    .flatMap((task) => {
+      const suggestedDate = parseDate(task.suggestedDate);
+      if (!suggestedDate) return [];
+
+      const daysLeft = dayDiff(suggestedDate, today);
+      const offsets = profiles.hard;
+      if (daysLeft > 0 && !offsets.includes(daysLeft)) return [];
+
+      return [
+        {
+          id: `clean-sequence-${task.id}`,
+          title: `${task.app?.identity.shortLabel ?? "Clean sequence"}: ${task.taskName}`,
+          tone: daysLeft < 0 ? "danger" : task.tone ?? "accent",
+          dueLabel:
+            daysLeft < 0
+              ? `${Math.abs(daysLeft)} dní po doporučeném datu`
+              : daysLeft === 0
+                ? `dnes · ${task.suggestedDisplay}`
+                : `za ${daysLeft} dní · ${task.suggestedDisplay}`,
+          body: `${task.description} Trigger: ${task.trigger}. Deadline: ${task.deadlineDisplay}.`,
+          chips: [task.app?.identity.shortLabel ?? "strategie", "clean sequence", "drop"],
+        },
+      ];
+    });
+}
+
 function buildManualTasks(applications, today) {
   const tasks = [];
   const fekApp = applications.find((app) => app.id === "zcu-fek-pem-k");
@@ -311,7 +370,7 @@ function buildManualTasks(applications, today) {
     });
   }
 
-  if (vseApp?.liveState.preferredExamDate && !vseApp.liveState.exactExamDate) {
+  if (vseApp?.liveState.preferredExamDate && !vseApp.liveState.exactExamDate && !vseApp.liveState.taskState?.softDropped) {
     tasks.push({
       id: "manual-vse-exam-confirmation",
       title: "U VŠE potvrď finální termín přijímačky",
@@ -380,37 +439,33 @@ function buildRecommendations(applications) {
   const acceptedBest = accepted[0];
   const vse = applications.find((app) => app.id === "vse-fm-management-k");
 
-  if (
-    acceptedIds.has("vse-fm-management-k") &&
-    (!acceptedBest || acceptedBest.id === "vse-fm-management-k") &&
-    !vse.liveState.taskState.returnSlipSent
-  ) {
+  if (acceptedIds.has("vse-fm-management-k") && (!acceptedBest || acceptedBest.id === "vse-fm-management-k") && !vse.liveState.taskState.returnSlipSent) {
     recommendations.push({
-      title: "VŠE drž jako keep-alive",
-      body: "Pokud je VŠE přijatá a lepší škola ještě není jistá, pošli Návratku. Není to finální preference, ale chrání tě před prázdnou rukou.",
-      tags: ["VŠE", "Návratka", "keep-alive"],
+      title: "VŠE znovu otevři jen jako nouzovou větev",
+      body: "Čistá sekvence ji dropuje hned. Pokud by se ale rozpadly všechny silnější jistoty a VŠE byla jediná přijatá varianta, můžeš ji vědomě znovu otevřít přes Návratku.",
+      tags: ["VŠE", "drop-now", "nouzově"],
     });
   }
 
   if (acceptedIds.has("czu-eamn-k") && acceptedIds.has("czu-paan-k")) {
     recommendations.push({
-      title: "Při dvojím přijetí na ČZU ber EAMN-k",
-      body: "Obě varianty jsou z téže fakulty, ale podle finální priority vítězí EAMN-k. PAAN-k dává smysl jen jako záložní držák, dokud EAMN není jisté.",
-      tags: ["ČZU", "EAMN", "PAAN"],
+      title: "Při dvojím ČZU přijetí ber PAAN-k",
+      body: "Obě varianty jsou z téže fakulty. V nové čisté sekvenci PAAN vítězí, protože je zvolený ČZU/business anchor pro kombinaci s UHK AI.",
+      tags: ["ČZU", "PAAN", "EAMN"],
     });
   }
 
   if (!accepted.length) {
     recommendations.push({
-      title: "Zatím jde hlavně o zachování opcí",
-      body: "Dokud nejsou finální rozhodnutí venku, nejdůležitější je nepropásnout dokumentové a potvrzovací termíny. ČZU test odpadl, takže první velký ČZU risk je až zápis s doklady.",
-      tags: ["pre-decision", "keep-alive"],
+      title: "Čistá sekvence je PAAN + UHK AI",
+      body: "Teď dropni VŠE jako aktivní větev, drž PAAN a UHK AI jako target anchory a nech FEK pracovat jako praktický backup, dokud nejsou oba anchory jisté.",
+      tags: ["PAAN", "UHK AI", "clean sequence"],
     });
   }
 
   recommendations.push({
     title: "FEK / ČZU / pozdější zápisy ber jako tvrdé commit momenty",
-    body: "Potvrzení typu VŠE Návratka ještě může být čistě ochranný tah. ČZU zápis už po prominutí testu vede přímo k potvrzení přijetí, takže ho ber jako finální volbu.",
+    body: "ČZU zápis po prominutí testu vede přímo k potvrzení přijetí, takže u PAAN neklikej mechanicky: ber ho jako finální ČZU volbu a zároveň moment, kdy pouštíš EAMN.",
     tags: ["commitment", "zápis"],
   });
 
@@ -481,7 +536,7 @@ function renderHeroSummary(applications, today) {
 }
 
 function renderActions(applications, today) {
-  const items = [...buildManualTasks(applications, today), ...buildReminderTasks(applications, today)].slice(0, 9);
+  const items = [...buildStrategyActionTasks(applications, today), ...buildManualTasks(applications, today), ...buildReminderTasks(applications, today)].slice(0, 9);
   if (!items.length) {
     return `<div class="empty-state">Teď není nic akutního. Jakmile doplníš další live data v <span class="mono">${escapeHtml(admissionsConfig.meta.configPath)}</span>, tracker sem přidá nové akce.</div>`;
   }
@@ -559,6 +614,7 @@ function renderSchoolCard(app) {
   const factCards = [
     { label: "Finální priorita", value: `#${app.priorities.finalChoiceRank}` },
     { label: "Keep-alive priorita", value: `#${app.priorities.keepAliveRank}` },
+    ...(app.strategy ? [{ label: "Strategie", value: app.strategy.label }] : []),
     { label: "Forma", value: app.identity.form },
     { label: "Kapacita", value: app.fixedRules.capacity },
   ];
@@ -642,6 +698,17 @@ function renderSchoolCard(app) {
           )
           .join("")}
       </div>
+
+      ${
+        app.strategy
+          ? `
+            <div class="school-section">
+              <h4>Clean sequence role</h4>
+              <p>${escapeHtml(app.strategy.note)}</p>
+            </div>
+          `
+          : ""
+      }
 
       <div class="school-section">
         <h4>Jak vypadá přijetí</h4>
@@ -730,7 +797,56 @@ function renderSchoolCard(app) {
   `;
 }
 
+function renderCleanSequence(tasks) {
+  const strategy = admissionsConfig.meta.cleanSequence;
+
+  return `
+    <div class="callout">
+      <strong>${escapeHtml(strategy.name)}:</strong>
+      ${escapeHtml(strategy.summary)}
+      Aktualizováno ${escapeHtml(formatDate(strategy.updatedDate))}.
+    </div>
+    <div class="sequence-list">
+      ${tasks
+        .map(
+          (task) => `
+            <article class="sequence-card sequence-card--${task.complete ? "success" : escapeHtml(task.tone ?? "accent")}">
+              <div class="sequence-card__top">
+                <div>
+                  <div class="sequence-card__step">Krok ${task.index + 1}</div>
+                  <h3>${escapeHtml(task.taskName)}</h3>
+                </div>
+                <div class="badge-row">
+                  <span class="badge badge--neutral">${escapeHtml(task.app?.identity.shortLabel ?? "neznámá přihláška")}</span>
+                  <span class="badge badge--${task.complete ? "success" : "accent"}">${task.complete ? "splněno" : "čeká"}</span>
+                </div>
+              </div>
+              <p class="muted">${escapeHtml(task.description)}</p>
+              <div class="sequence-card__dates">
+                <div>
+                  <span>Trigger</span>
+                  <strong>${escapeHtml(task.trigger)}</strong>
+                </div>
+                <div>
+                  <span>Doporučené datum</span>
+                  <strong>${escapeHtml(task.suggestedDisplay)}</strong>
+                </div>
+                <div>
+                  <span>Deadline</span>
+                  <strong>${escapeHtml(task.deadlineDisplay)}</strong>
+                </div>
+              </div>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderFlow(applications) {
+  const cleanSequenceTasks = buildCleanSequenceTasks(applications);
+
   return `
     <div class="callout">
       <strong>Jak s flow pracovat:</strong>
@@ -738,6 +854,7 @@ function renderFlow(applications) {
       <strong>tvrdými commit momenty</strong> (zápisy a osobní administrace zápisu).
       To je hlavní pojistka proti tomu, aby ses upsal moc brzo a pak litoval lepší pozdější nabídky.
     </div>
+    ${renderCleanSequence(cleanSequenceTasks)}
     <div class="flow-list">
       ${buildRecommendations(applications)
         .map(

@@ -11,6 +11,72 @@ export const admissionsConfig = {
       prep: [30, 14, 7],
       watch: [21, 14, 7, 3, 1],
     },
+    cleanSequence: {
+      name: "ČZU PAAN + UHK AI clean sequence",
+      updatedDate: "2026-05-05",
+      summary: "Target path is one ČZU business anchor plus UHK AI. Keep backups only until their trigger has done its job.",
+      targetApplicationIds: ["czu-paan-k", "uhk-ai-k"],
+      tasks: [
+        {
+          id: "drop-vse-now",
+          applicationId: "vse-fm-management-k",
+          taskName: "Soft-drop VŠE",
+          trigger: "Hned",
+          suggestedDate: "2026-05-05",
+          deadlineDate: "2026-06-12",
+          deadlineLabel: "Před první VŠE přijímačkou 12. 6. 2026",
+          description: "Stop preparing for VŠE and treat the application as inactive unless you explicitly reopen it. The fee is sunk; the point is to protect attention.",
+          taskKey: "taskState.softDropped",
+          tone: "danger",
+        },
+        {
+          id: "drop-uhk-im-after-ai",
+          applicationId: "uhk-im-k",
+          taskName: "Drop UHK IM after UHK AI acceptance",
+          trigger: "UHK AI official acceptance in STAG / email",
+          suggestedLabel: "Den potvrzení UHK AI",
+          deadlineLabel: "Před jakýmkoliv potvrzením nebo zápisem UHK IM",
+          description: "Once UHK AI is official, UHK IM duplicates the same school/logistics bucket with less upside for the chosen AI direction.",
+          taskKey: "taskState.droppedAfterAiAcceptance",
+          tone: "warning",
+        },
+        {
+          id: "drop-tul-after-fek",
+          applicationId: "tul-mpp-k",
+          taskName: "Drop TUL after ZČU FEK confirmation",
+          trigger: "ZČU FEK conditions / acceptance confirmed",
+          suggestedDate: "2026-07-01",
+          deadlineLabel: "Před jakýmkoliv TUL zápisem nebo závazným potvrzením",
+          description: "After FEK verifies the practical backup path, TUL is a weaker logistical backup and should stop consuming attention.",
+          taskKey: "taskState.droppedAfterFekConfirmation",
+          tone: "warning",
+        },
+        {
+          id: "drop-czu-eamn-at-paan-lock",
+          applicationId: "czu-eamn-k",
+          taskName: "Drop ČZU EAMN when PAAN is locked",
+          trigger: "ČZU PAAN enrolment documents are ready and PAAN is the chosen ČZU anchor",
+          suggestedDate: "2026-07-08",
+          deadlineDate: "2026-07-10",
+          deadlineLabel: "Do konce řádného ČZU zápisu 10. 7. 2026",
+          description: "Use PAAN as the ČZU/business anchor for the PAAN + UHK AI plan. Do not carry both ČZU sibling programs past the enrolment decision.",
+          taskKey: "taskState.droppedAfterPaanLock",
+          tone: "warning",
+        },
+        {
+          id: "drop-zcu-after-anchors",
+          applicationId: "zcu-fek-pem-k",
+          taskName: "Drop ZČU FEK after both anchors are secured",
+          trigger: "ČZU PAAN is enrolled or locked and UHK AI is officially accepted",
+          suggestedDate: "2026-07-10",
+          deadlineDate: "2026-07-17",
+          deadlineLabel: "Před osobní administrací FEK zápisu 17. 7. 2026",
+          description: "FEK is the practical safety net. Once PAAN and UHK AI are both real, the safety net has done its job; if either anchor is missing, keep FEK.",
+          taskKey: "taskState.droppedAfterAnchorsSecured",
+          tone: "accent",
+        },
+      ],
+    },
   },
   bachelorTimeline: {
     school: "NEWTON University",
@@ -63,7 +129,7 @@ export const admissionsConfig = {
   applications: [
     {
       id: "czu-eamn-k",
-      priorities: { finalChoiceRank: 1, keepAliveRank: 1 },
+      priorities: { finalChoiceRank: 3, keepAliveRank: 3 },
       identity: {
         shortLabel: "ČZU EAMN-k",
         school: "Česká zemědělská univerzita v Praze",
@@ -72,7 +138,12 @@ export const admissionsConfig = {
         program: "Ekonomika a management",
         code: "N-EAMN",
         form: "kombinovaná",
-        travelPrestigeNote: "Nejvyšší finální priorita. Silná kombinace oboru a reálně přijatelné logistiky.",
+        travelPrestigeNote: "Silná ČZU alternativa, ale v čisté sekvenci ustupuje PAAN kvůli párování s UHK AI.",
+      },
+      strategy: {
+        label: "ČZU sibling backup",
+        status: "drop-after-paan-lock",
+        note: "Drž jen do chvíle, kdy je PAAN jako zvolený ČZU anchor prakticky zabezpečená k zápisu.",
       },
       fixedRules: {
         sourceIds: ["application-list", "czu-rules", "czu-waiver"],
@@ -169,18 +240,19 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Primární cíl mezi všemi přihláškami.",
+        notes: "ČZU sibling backup. V čisté sekvenci se má pustit, jakmile je PAAN bezpečně připravená k zápisu.",
         taskState: {
           enrollmentDocumentsReady: false,
           enrollmentCompleted: false,
           altEnrollmentRequestSent: false,
           altEnrollmentCompleted: false,
+          droppedAfterPaanLock: false,
         },
       },
     },
     {
       id: "czu-paan-k",
-      priorities: { finalChoiceRank: 2, keepAliveRank: 2 },
+      priorities: { finalChoiceRank: 1, keepAliveRank: 1 },
       identity: {
         shortLabel: "ČZU PAAN-k",
         school: "Česká zemědělská univerzita v Praze",
@@ -189,7 +261,12 @@ export const admissionsConfig = {
         program: "Podnikání a administrativa",
         code: "N-PAANP",
         form: "kombinovaná",
-        travelPrestigeNote: "Stejná fakulta a logistika jako EAMN, ale nižší finální priorita než EAMN.",
+        travelPrestigeNote: "Zvolený ČZU/business anchor pro čistou sekvenci PAAN + UHK AI.",
+      },
+      strategy: {
+        label: "Target anchor",
+        status: "target",
+        note: "Primární ČZU volba pro dvojici s UHK AI. Zápis ber jako tvrdý commit.",
       },
       fixedRules: {
         sourceIds: ["application-list", "czu-rules", "czu-waiver"],
@@ -234,7 +311,7 @@ export const admissionsConfig = {
             reminderProfile: "hard",
             taskKey: "taskState.enrollmentCompleted",
             irreversible: true,
-            note: "Řádný zápis 9.-10. 7. 2026. Po zápisu dostaneš potvrzení o přijetí; u dvojí ČZU varianty ber jako finální volbu EAMN.",
+            note: "Řádný zápis 9.-10. 7. 2026. Po zápisu dostaneš potvrzení o přijetí; u dvojí ČZU varianty ber jako finální volbu PAAN.",
             sourceIds: ["czu-rules", "czu-waiver"],
           },
           {
@@ -286,7 +363,7 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Keep-alive i záložní varianta vedle EAMN.",
+        notes: "Primární ČZU/business anchor pro čistou sekvenci PAAN + UHK AI.",
         taskState: {
           enrollmentDocumentsReady: false,
           enrollmentCompleted: false,
@@ -297,7 +374,7 @@ export const admissionsConfig = {
     },
     {
       id: "vse-fm-management-k",
-      priorities: { finalChoiceRank: 6, keepAliveRank: 3 },
+      priorities: { finalChoiceRank: 7, keepAliveRank: 7 },
       identity: {
         shortLabel: "VŠE FM Management-k",
         school: "Vysoká škola ekonomická v Praze",
@@ -306,13 +383,18 @@ export const admissionsConfig = {
         program: "Management",
         code: "N-MG",
         form: "kombinovaná",
-        travelPrestigeNote: "Prestižní možnost s horší logistikou. Vyšší priorita zkusit než dlouhodobě přijmout.",
+        travelPrestigeNote: "Soft-drop hned: prestiž nestačí vyvážit logistiku a červnovou přípravu.",
+      },
+      strategy: {
+        label: "Drop now",
+        status: "soft-drop-now",
+        note: "Neinvestuj do přípravy. Drž jen jako pasivní sunk-cost větev, pokud ji výslovně znovu otevřeš.",
       },
       fixedRules: {
         sourceIds: ["application-list", "vse-rules", "vse-faq"],
         capacity: "260 celkem pro obě formy",
         admissionProcess: "Rozhodnutí nebo Oznámení v InSIS, pak do 25. 6. odeslat Návratku, zápis probíhá on-line.",
-        acceptanceLook: "Pokud přijde přijetí nebo Oznámení a ještě nebudeš mít lepší jistotu, VŠE drž jako keep-alive přes Návratku.",
+        acceptanceLook: "V čisté sekvenci je VŠE soft-dropped. Znovu ji otevři jen nouzově, pokud by se rozpadly silnější jistoty.",
         exam: {
           type: "Písemná přijímací zkouška",
           duration: "2 testy, každý hodnocený stejně",
@@ -402,17 +484,18 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Prestižní, ale logisticky slabší volba. Spíš držet při životě než automaticky vzít.",
+        notes: "Soft-drop podle čisté sekvence. Nepřipravovat se na přijímačku, pokud větev výslovně znovu neotevřeš.",
         taskState: {
           examCompleted: false,
           returnSlipSent: false,
           enrollmentCompleted: false,
+          softDropped: true,
         },
       },
     },
     {
       id: "zcu-fek-pem-k",
-      priorities: { finalChoiceRank: 3, keepAliveRank: 4 },
+      priorities: { finalChoiceRank: 4, keepAliveRank: 4 },
       identity: {
         shortLabel: "ZČU FEK PEM-k",
         school: "Západočeská univerzita v Plzni",
@@ -421,7 +504,12 @@ export const admissionsConfig = {
         program: "Podniková ekonomika a management",
         code: "PEM-N-K",
         form: "kombinovaná",
-        travelPrestigeNote: "Nižší prestiž, ale logisticky pohodlnější a proto relativně vysoko jako praktická varianta.",
+        travelPrestigeNote: "Praktická safety-net varianta do chvíle, kdy jsou PAAN a UHK AI opravdu zabezpečené.",
+      },
+      strategy: {
+        label: "Practical backup",
+        status: "backup-until-anchors",
+        note: "Drž jako bezpečnostní síť; pusť až po zajištění ČZU PAAN a UHK AI.",
       },
       fixedRules: {
         sourceIds: ["application-list", "fek-rules"],
@@ -508,11 +596,12 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Praktická varianta s dobrou dopravou. Hodně stojí na tom, jak vyjde CB.",
+        notes: "Praktická safety-net varianta. Pustit až po zajištění obou anchorů: ČZU PAAN + UHK AI.",
         taskState: {
           averageDocsUploaded: false,
           diplomaUploaded: false,
           enrollmentCompleted: false,
+          droppedAfterAnchorsSecured: false,
         },
         extras: {
           fieldBonusEligible: true,
@@ -523,7 +612,7 @@ export const admissionsConfig = {
     },
     {
       id: "uhk-im-k",
-      priorities: { finalChoiceRank: 4, keepAliveRank: 5 },
+      priorities: { finalChoiceRank: 5, keepAliveRank: 5 },
       identity: {
         shortLabel: "UHK IM-k",
         school: "Univerzita Hradec Králové",
@@ -532,7 +621,12 @@ export const admissionsConfig = {
         program: "Informační management",
         code: "im2-k",
         form: "kombinovaná",
-        travelPrestigeNote: "Střední priorita: oborově sympatické, ale cestování není ideální.",
+        travelPrestigeNote: "Dočasná UHK záloha jen do potvrzení UHK AI.",
+      },
+      strategy: {
+        label: "Drop after UHK AI",
+        status: "drop-after-ai",
+        note: "Jakmile je UHK AI oficiální, IM je redundantní UHK varianta.",
       },
       fixedRules: {
         sourceIds: ["application-list", "uhk-rules", "uhk-criteria", "uhk-harmonogram-2026"],
@@ -584,9 +678,10 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Rozumný střed: zajímavý obor, ale s horší dopravou než FEK/ČZU.",
+        notes: "Dočasná UHK záloha. Po oficiální UHK AI akceptaci pustit.",
         taskState: {
           acceptanceNoticeChecked: false,
+          droppedAfterAiAcceptance: false,
         },
         extras: {
           foreignMobilityMonths: 0,
@@ -595,7 +690,7 @@ export const admissionsConfig = {
     },
     {
       id: "tul-mpp-k",
-      priorities: { finalChoiceRank: 5, keepAliveRank: 6 },
+      priorities: { finalChoiceRank: 6, keepAliveRank: 6 },
       identity: {
         shortLabel: "EF TUL MPP-k",
         school: "Technická univerzita v Liberci",
@@ -604,7 +699,12 @@ export const admissionsConfig = {
         program: "Podniková ekonomika - Management podnikových procesů",
         code: "MPP",
         form: "kombinovaná",
-        travelPrestigeNote: "Záložní, ale stále přijatelná varianta. Hůř dostupná než FEK a ČZU.",
+        travelPrestigeNote: "Záložní varianta jen do chvíle, kdy ZČU FEK potvrdí praktický backup.",
+      },
+      strategy: {
+        label: "Drop after FEK",
+        status: "drop-after-fek",
+        note: "Po potvrzení FEK přestává TUL dávat dost hodnoty proti logistice.",
       },
       fixedRules: {
         sourceIds: ["application-list", "tul-rules"],
@@ -668,17 +768,18 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Záloha, která se může zjednodušit, pokud vyjde průměr do 2.50.",
+        notes: "Dočasná záloha. Po potvrzení FEK ji pustit.",
         taskState: {
           transcriptUploaded: false,
           examCompleted: false,
           completionProofDelivered: false,
+          droppedAfterFekConfirmation: false,
         },
       },
     },
     {
       id: "uhk-ai-k",
-      priorities: { finalChoiceRank: 7, keepAliveRank: 7 },
+      priorities: { finalChoiceRank: 2, keepAliveRank: 2 },
       identity: {
         shortLabel: "UHK AI-k",
         school: "Univerzita Hradec Králové",
@@ -687,7 +788,12 @@ export const admissionsConfig = {
         program: "Aplikovaná informatika",
         code: "ai2-k",
         form: "kombinovaná",
-        travelPrestigeNote: "Nejnižší priorita a zároveň nejslabší šance na přijetí. Má smysl ji držet jen jako bonusový shot.",
+        travelPrestigeNote: "Technický upside anchor pro čistou sekvenci PAAN + UHK AI.",
+      },
+      strategy: {
+        label: "Target anchor",
+        status: "target",
+        note: "Hlavní technická větev. Jakmile je oficiální, odemkne drop UHK IM.",
       },
       fixedRules: {
         sourceIds: ["application-list", "uhk-rules", "uhk-criteria", "uhk-harmonogram-2026"],
@@ -739,7 +845,7 @@ export const admissionsConfig = {
         confirmedInterest: false,
         enrolled: false,
         diplomaReady: false,
-        notes: "Low-probability shot. Tracker ji drží, ale doporučení ji dává až na konec.",
+        notes: "Target AI anchor. Po oficiálním potvrzení ve STAG/emailu pustit UHK IM.",
         taskState: {
           acceptanceNoticeChecked: false,
         },

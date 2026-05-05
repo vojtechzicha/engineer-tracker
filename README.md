@@ -10,6 +10,7 @@ A static, single-page web application for tracking master's degree (navazující
 - Shows **next actions** with smart reminders (configurable profiles: hard, prep, watch)
 - Calculates school-specific scores (FEK CB formula, TUL exam condition based on GPA)
 - Provides a **decision flow** with keep-alive vs. hard-commit recommendations
+- Makes the **clean sequence** explicit: target ČZU PAAN + UHK AI, soft-drop VŠE now, then release backups as their triggers are confirmed
 - Generates **appeal/review paths** where officially documented
 - Incorporates ČZU PEF's 2026 waiver of the master's entrance exam and the resulting enrolment/document path
 - Cites all source documents per school
@@ -18,13 +19,13 @@ A static, single-page web application for tracking master's degree (navazující
 
 | # | Short label | University | Faculty | Program | Form |
 |---|-------------|-----------|---------|---------|------|
-| 1 | ČZU EAMN-k | Česká zemědělská univerzita v Praze | Provozně-ekonomická fakulta | Ekonomika a management | kombinovaná |
-| 2 | ČZU PAAN-k | Česká zemědělská univerzita v Praze | Provozně-ekonomická fakulta | Podnikání a administrativa | kombinovaná |
-| 3 | VŠE FM Management-k | Vysoká škola ekonomická v Praze | Fakulta managementu | Management | kombinovaná |
+| 1 | ČZU PAAN-k | Česká zemědělská univerzita v Praze | Provozně-ekonomická fakulta | Podnikání a administrativa | kombinovaná |
+| 2 | UHK AI-k | Univerzita Hradec Králové | Fakulta informatiky a managementu | Aplikovaná informatika | kombinovaná |
+| 3 | ČZU EAMN-k | Česká zemědělská univerzita v Praze | Provozně-ekonomická fakulta | Ekonomika a management | kombinovaná |
 | 4 | ZČU FEK PEM-k | Západočeská univerzita v Plzni | Fakulta ekonomická | Podniková ekonomika a management | kombinovaná |
 | 5 | UHK IM-k | Univerzita Hradec Králové | Fakulta informatiky a managementu | Informační management | kombinovaná |
 | 6 | EF TUL MPP-k | Technická univerzita v Liberci | Ekonomická fakulta | Management podnikových procesů | kombinovaná |
-| 7 | UHK AI-k | Univerzita Hradec Králové | Fakulta informatiky a managementu | Aplikovaná informatika | kombinovaná |
+| 7 | VŠE FM Management-k | Vysoká škola ekonomická v Praze | Fakulta managementu | Management | kombinovaná |
 
 ## Project structure
 
@@ -76,6 +77,7 @@ All live state is in `data/config.js`. Update these fields as events unfold:
 - **`liveState.exactExamDate`** — confirmed exam slot (generates derived events like result dates)
 - For ČZU PEF, `exactExamDate` is intentionally unused after ND 5/2026 because the entrance exam is waived.
 - **`liveState.taskState.*`** — mark tasks as `true` when completed
+- **`meta.cleanSequence.tasks`** — the strategic drop plan, including trigger, suggested due date, and deadline for each release step
 - **`liveState.weightedAverage`** — your GPA (drives FEK CB score and TUL exam/no-exam logic)
 - **`liveState.extras.*`** — bonus flags for FEK scoring (field bonus, thesis award, internship)
 
