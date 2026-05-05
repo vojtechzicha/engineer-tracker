@@ -21,6 +21,13 @@ export const sourceLibrary = [
     note: "Nařízení děkana pro magisterské programy PEF.",
   },
   {
+    id: "czu-waiver",
+    title: "ČZU PEF - prominutí přijímací zkoušky Ing 2026/2027",
+    kind: "local",
+    url: "./docs/CZU PEF - prominuti prijimaci zkousky ing.md",
+    note: "Nařízení děkana č. 5/2026: zkouška se promíjí, rozhodující jsou přihláška, poplatek, zápis a doklady.",
+  },
+  {
     id: "vse-rules",
     title: "VŠE FM - podmínky přijetí 2026/2027",
     kind: "local",

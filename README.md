@@ -11,6 +11,7 @@ A static, single-page web application for tracking master's degree (navazující
 - Calculates school-specific scores (FEK CB formula, TUL exam condition based on GPA)
 - Provides a **decision flow** with keep-alive vs. hard-commit recommendations
 - Generates **appeal/review paths** where officially documented
+- Incorporates ČZU PEF's 2026 waiver of the master's entrance exam and the resulting enrolment/document path
 - Cites all source documents per school
 
 ## Tracked universities
@@ -39,6 +40,7 @@ A static, single-page web application for tracking master's degree (navazující
     ├── application.md
     ├── Newton Bachelor.html
     ├── ČZU PEF - podminky ing.md / .pdf
+    ├── CZU PEF - prominuti prijimaci zkousky ing.md / .pdf
     ├── VŠE FM - podminky-ing-26-27.md / .pdf
     ├── ZČU FEK - pravidla ing.md / .pdf
     ├── UHK FIM - pravidla ing.md / .pdf
@@ -72,6 +74,7 @@ All live state is in `data/config.js`. Update these fields as events unfold:
 - **`liveState.decision`** — set to `"accepted"`, `"rejected"`, `"conditional"`, or `"withdrawn"` when you receive a decision
 - **`liveState.decisionDate`** — date of the decision (triggers appeal deadline calculations)
 - **`liveState.exactExamDate`** — confirmed exam slot (generates derived events like result dates)
+- For ČZU PEF, `exactExamDate` is intentionally unused after ND 5/2026 because the entrance exam is waived.
 - **`liveState.taskState.*`** — mark tasks as `true` when completed
 - **`liveState.weightedAverage`** — your GPA (drives FEK CB score and TUL exam/no-exam logic)
 - **`liveState.extras.*`** — bonus flags for FEK scoring (field bonus, thesis award, internship)

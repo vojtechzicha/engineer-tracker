@@ -22,21 +22,6 @@ function addDays(date, days) {
   return startOfDay(result);
 }
 
-function addBusinessDays(date, businessDays) {
-  let cursor = startOfDay(date);
-  let remaining = businessDays;
-
-  while (remaining > 0) {
-    cursor = addDays(cursor, 1);
-    const day = cursor.getDay();
-    if (day !== 0 && day !== 6) {
-      remaining -= 1;
-    }
-  }
-
-  return cursor;
-}
-
 function dayDiff(target, base) {
   return Math.round((startOfDay(target) - startOfDay(base)) / DAY_MS);
 }
@@ -199,19 +184,6 @@ function buildDerivedEvents(app) {
         ? `Potvrzený slot máš nastavený na ${formatDate(confirmedDate)}.`
         : `Pracovní preference je ${formatDate(preferredDate)}, ale finální slot ještě čeká na potvrzení v InSIS / pozvánce.`;
     }
-  }
-
-  if (app.id.startsWith("czu-") && app.liveState.exactExamDate) {
-    events.push({
-      id: `${app.id}-results`,
-      label: "Předpokládané zveřejnění výsledků testu",
-      date: addBusinessDays(parseDate(app.liveState.exactExamDate), 2).toISOString().slice(0, 10),
-      kind: "decision",
-      actor: "Škola",
-      reminderProfile: "watch",
-      note: "PEF zveřejňuje výsledky po dvou pracovních dnech od konání zkoušky.",
-      sourceIds: ["czu-rules"],
-    });
   }
 
   if (app.id.startsWith("uhk-") && app.liveState.exactExamDate) {
@@ -431,14 +403,14 @@ function buildRecommendations(applications) {
   if (!accepted.length) {
     recommendations.push({
       title: "Zatím jde hlavně o zachování opcí",
-      body: "Dokud nejsou výsledky venku, nejdůležitější je nepropásnout dokumentové a potvrzovací termíny. VŠE Návratka je první velký keep-alive checkpoint.",
+      body: "Dokud nejsou finální rozhodnutí venku, nejdůležitější je nepropásnout dokumentové a potvrzovací termíny. ČZU test odpadl, takže první velký ČZU risk je až zápis s doklady.",
       tags: ["pre-decision", "keep-alive"],
     });
   }
 
   recommendations.push({
     title: "FEK / ČZU / pozdější zápisy ber jako tvrdé commit momenty",
-    body: "Potvrzení typu VŠE Návratka ještě může být čistě ochranný tah. Osobní nebo závazné zápisy už ber jako moment, kdy se musíš přepnout z držení opcí do finální volby.",
+    body: "Potvrzení typu VŠE Návratka ještě může být čistě ochranný tah. ČZU zápis už po prominutí testu vede přímo k potvrzení přijetí, takže ho ber jako finální volbu.",
     tags: ["commitment", "zápis"],
   });
 
@@ -542,7 +514,7 @@ function renderTimeline(timeline, bachelorEvents) {
       <strong>Tvrdé kolize, které tracker hlídá:</strong>
       FEK doklady <strong>31. 5. 2026</strong> a TUL doklady <strong>4. 6. 2026</strong>
       padají přímo do NU <strong>Bc SZZ 25. 5. - 5. 6. 2026</strong>.
-      VŠE Návratka <strong>25. 6. 2026</strong> může pořád předběhnout některé ČZU výsledky, zatímco UHK teď hlídej hlavně přes STAG / email.
+      ČZU nově nemá červnovou zkoušku; hlídej hlavně doklady k zápisu <strong>8. 7. 2026</strong>, řádný zápis <strong>9.-10. 7. 2026</strong> a případnou žádost o náhradní termín do <strong>17. 7. 2026</strong>.
     </div>
     <div class="timeline-list">
       ${timeline
