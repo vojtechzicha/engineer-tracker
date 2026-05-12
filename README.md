@@ -1,5 +1,7 @@
 # Ing 2026 Admissions Tracker
 
+> **Archived — no longer used or updated.** This repository is kept for historical reference only. There is no active deployment.
+
 A static, single-page web application for tracking master's degree (navazující magisterské) admissions to Czech universities for the 2026/2027 academic year.
 
 ## What it does
